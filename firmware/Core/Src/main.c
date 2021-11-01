@@ -33,6 +33,7 @@
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
 #define TX_ID 0x123
+#define TX_DELAY_MS 10
 
 /* USER CODE END PD */
 
@@ -116,10 +117,12 @@ int main(void)
   TxHeader.IDE = CAN_ID_STD;
   TxHeader.StdId = TX_ID;
   TxHeader.RTR = CAN_RTR_DATA;
-  TxHeader.DLC = 4;
+  TxHeader.DLC = 6;
 
-  TxData[0] = 50;  
-  TxData[1] = 0xAA;
+
+  uint32_t adc_inputs[3]; 
+  HAL_ADC_Start_DMA(&hadc1, adc_inputs, 3); // start adc in DMA mode
+
 
   /* USER CODE END 2 */
 
@@ -127,14 +130,21 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+    HAL_Delay(TX_DELAY_MS); // wait so that we don't swamp the CAN bus
 
+    // Pack ADC data into CAN frame
+    TxData[0] = (adc_inputs[0] >> 8) % 0xFF;
+    TxData[1] = (adc_inputs[0] >> 0) % 0xFF;
+    TxData[2] = (adc_inputs[1] >> 8) % 0xFF;
+    TxData[3] = (adc_inputs[1] >> 0) % 0xFF;
+    TxData[4] = (adc_inputs[2] >> 8) % 0xFF;
+    TxData[5] = (adc_inputs[2] >> 0) % 0xFF;
 
     if (HAL_CAN_AddTxMessage(&hcan1, &TxHeader, TxData, &TxMailbox) != HAL_OK)
     {
       Error_Handler ();
     }
 
-    HAL_Delay(1);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */

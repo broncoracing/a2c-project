@@ -1,3 +1,6 @@
+# Firmware builds
+firmware/build/
+
 # Various Altium files
 *.PrjPCBStructure
 *.SchDocPreview

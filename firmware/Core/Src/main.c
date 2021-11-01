@@ -32,6 +32,8 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
+#define TX_ID 0x123
+
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -49,6 +51,12 @@ DAC_HandleTypeDef hdac1;
 TIM_HandleTypeDef htim1;
 
 /* USER CODE BEGIN PV */
+
+
+CAN_TxHeaderTypeDef   TxHeader;
+CAN_TxHeaderTypeDef   RxHeader;
+uint8_t               TxData[8];
+uint32_t              TxMailbox;
 
 /* USER CODE END PV */
 
@@ -102,13 +110,30 @@ int main(void)
   MX_TIM1_Init();
   /* USER CODE BEGIN 2 */
 
+  TxHeader.IDE = CAN_ID_STD;
+  TxHeader.StdId = TX_ID;
+  TxHeader.RTR = CAN_RTR_DATA;
+  TxHeader.DLC = 4;
+
+  TxData[0] = 50;  
+  TxData[1] = 0xAA;
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+
+
+    if (HAL_CAN_AddTxMessage(&hcan1, &TxHeader, TxData, &TxMailbox) != HAL_OK)
+    {
+      Error_Handler ();
+    }
+
+    HAL_Delay(1);
     /* USER CODE END WHILE */
+
 
     /* USER CODE BEGIN 3 */
   }
